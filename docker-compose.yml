@@ -1,31 +1,29 @@
-# For adding MongoDB to Docker Compose
-
 services:
-  # MongoDB Service
-  mongo-auth:
+  # MongoDB for Projects Service
+  mongo-projects:
     image: mongo:6.0
-    container_name: mongo-auth
+    container_name: mongo-projects
     environment:
       MONGO_INITDB_ROOT_USERNAME: ${MONGO_INITDB_ROOT_USERNAME}
       MONGO_INITDB_ROOT_PASSWORD: ${MONGO_INITDB_ROOT_PASSWORD}
       MONGO_INITDB_DATABASE: ${MONGO_DB}
     ports:
-      - "${MONGO_PORT}:27017"
+      - "27018:27017"
     volumes:
-      - auth-mongo-data:/data/db
+      - projects-mongo-data:/data/db
     networks:
-      - auth-network
+      - projects-network
 
-  # Flask User Auth Service
-  user-auth:
+  # Flask Projects Service
+  projects-service:
     build: .
-    container_name: user-auth-service
+    container_name: projects-service
     depends_on:
-      - mongo-auth
+      - mongo-projects
     environment:
-      PORT: 5001
+      PORT: ${PORT}
       JWT_SECRET_KEY: ${JWT_SECRET_KEY}
-      MONGO_HOST: mongo-auth
+      MONGO_HOST: mongo-projects
       MONGO_PORT: ${MONGO_PORT}
       MONGO_DB: ${MONGO_DB}
       MONGO_INITDB_ROOT_USERNAME: ${MONGO_INITDB_ROOT_USERNAME}
@@ -33,17 +31,14 @@ services:
       MONGO_AUTHSOURCE: ${MONGO_AUTHSOURCE}
       CORS_ORIGINS: ${CORS_ORIGINS}
     ports:
-      - "5001:5001"
+      - "${PORT}:${PORT}"
     networks:
-      - auth-network
+      - projects-network
 
-
-# Persist MongoDB data
 volumes:
-  auth-mongo-data:
+  projects-mongo-data:
 
-# Internal network for services
 networks:
-  auth-network:
+  projects-network:
     driver: bridge
 
